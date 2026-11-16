@@ -1,0 +1,239 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * NOVA SYNC design tokens.
+ * Brand: deep navy (#101828), vibrant blue (#2563EB), soft lavender (#8B5CF6).
+ * Surfaces are cool, near-white slates; color is used to signal, not decorate.
+ */
+:root {
+  --radius: 0.75rem;
+
+  --background: #f8fafc;
+  --foreground: #101828;
+  --card: #ffffff;
+  --card-foreground: #101828;
+  --popover: #ffffff;
+  --popover-foreground: #101828;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1e293b;
+  --muted: #f1f5f9;
+  --muted-foreground: #5b6478;
+  --accent: #eef2ff;
+  --accent-foreground: #1e3a8a;
+  --destructive: #e11d48;
+  --destructive-foreground: #ffffff;
+  --border: #e4e8ef;
+  --input: #dfe4ec;
+  --ring: #2563eb;
+
+  --navy: #101828;
+  --brand: #2563eb;
+  --lavender: #8b5cf6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #e11d48;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #101828;
+  --sidebar-border: #e9edf3;
+
+  /* Event categories (calendar + legends) */
+  --cat-meeting: #2563eb;
+  --cat-deadline: #e11d48;
+  --cat-task: #8b5cf6;
+  --cat-milestone: #10b981;
+  --cat-event: #f59e0b;
+
+  --chart-1: #2563eb;
+  --chart-2: #8b5cf6;
+  --chart-3: #10b981;
+  --chart-4: #f59e0b;
+  --chart-5: #94a3b8;
+
+  --shadow-soft: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
+  --shadow-lift: 0 12px 32px -12px rgb(16 24 40 / 0.18), 0 2px 6px rgb(16 24 40 / 0.05);
+}
+
+.dark {
+  --background: #0b1020;
+  --foreground: #e7ebf3;
+  --card: #111830;
+  --card-foreground: #e7ebf3;
+  --popover: #121a33;
+  --popover-foreground: #e7ebf3;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #19223d;
+  --secondary-foreground: #e2e8f0;
+  --muted: #19223d;
+  --muted-foreground: #98a2b8;
+  --accent: #1c2747;
+  --accent-foreground: #c7d2fe;
+  --destructive: #f43f5e;
+  --destructive-foreground: #ffffff;
+  --border: #222c4a;
+  --input: #2a355a;
+  --ring: #3b82f6;
+
+  --sidebar: #0e1428;
+  --sidebar-foreground: #e7ebf3;
+  --sidebar-border: #1c2544;
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-lift: 0 16px 40px -16px rgb(0 0 0 / 0.6);
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-navy: var(--navy);
+  --color-brand: var(--brand);
+  --color-lavender: var(--lavender);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+
+  --color-cat-meeting: var(--cat-meeting);
+  --color-cat-deadline: var(--cat-deadline);
+  --color-cat-task: var(--cat-task);
+  --color-cat-milestone: var(--cat-milestone);
+  --color-cat-event: var(--cat-event);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--shadow-lift);
+
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01", "ss03";
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--brand) 22%, transparent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .bg-brand-gradient {
+    background-image: linear-gradient(135deg, var(--brand) 0%, var(--lavender) 100%);
+  }
+  .text-brand-gradient {
+    background-image: linear-gradient(120deg, #2563eb 0%, #6d5cf6 55%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--foreground) 6%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--foreground) 6%, transparent) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .surface {
+    @apply bg-card text-card-foreground rounded-2xl border shadow-soft;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--foreground) 18%, transparent) transparent;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+}
+
+@keyframes wave {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  10%, 30% { transform: rotate(14deg); }
+  20% { transform: rotate(-8deg); }
+  40% { transform: rotate(-4deg); }
+  50% { transform: rotate(10deg); }
+}
