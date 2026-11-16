@@ -26,6 +26,8 @@ import type {
 import { STATUS_LABEL } from "@/lib/types";
 import { computeProgress } from "@/lib/selectors/progress";
 import { uid } from "@/lib/utils";
+import { cellsForDay } from "@/lib/scheduling/matcher";
+import { cellKey, parseLocalKey } from "@/lib/dates";
 
 export class CommandError extends Error {
   constructor(message: string) {
@@ -198,11 +200,21 @@ function parse<T>(schema: z.ZodType<T>, data: unknown): T {
 }
 
 // ── Reducer ─────────────────────────────────────────────────────────────
+export interface ApplyOptions {
+  /**
+   * Demo mode only: lets the signed-in user fill in a simulated teammate's
+   * availability so the scheduler can be demonstrated alone. Real workspaces
+   * leave this off, and RLS enforces the same rule in Supabase.
+   */
+  allowProxyAvailability?: boolean;
+}
+
 export function applyCommand(
   current: WorkspaceSnapshot,
   actorId: ID,
   cmd: Command,
   now: Date = new Date(),
+  options: ApplyOptions = {},
 ): CommandResult {
   const ws = clone(current);
   const ts = now.toISOString();
@@ -392,6 +404,8 @@ export function applyCommand(
     case "task.move": {
       const t = must(ws.tasks.find((x) => x.id === cmd.id), "Task");
       requireMember(ws, t.projectId, actorId);
+      if (!(cmd.status in STATUS_LABEL)) throw new CommandError("Unknown task status");
+      if (!Number.isFinite(cmd.index)) throw new CommandError("Invalid position");
       const column = ws.tasks
         .filter((x) => x.projectId === t.projectId && x.status === cmd.status && x.id !== t.id)
         .sort((a, b) => a.order - b.order);
@@ -514,10 +528,13 @@ export function applyCommand(
     case "meeting.availability": {
       const m = must(ws.meetings.find((x) => x.id === cmd.meetingId), "Meeting");
       requireMember(ws, m.projectId, actorId);
+      if (cmd.userId !== actorId && !options.allowProxyAvailability)
+        throw new CommandError("You can only share your own availability");
       if (!m.inviteeIds.includes(cmd.userId)) throw new CommandError("That person isn't invited");
       if (m.status !== "polling") throw new CommandError("This poll is closed");
-      const allowed = new Set(m.candidateDates);
-      const slots = [...new Set(cmd.slots)].filter((k) => allowed.has(k.slice(0, 10))).sort();
+      // Keep only real grid cells: candidate days, inside the daily window, on the slot grid.
+      const allowed = new Set(m.candidateDates.flatMap((d) => cellsForDay(d, m.dayStartHour, m.dayEndHour, m.slotMinutes)));
+      const slots = [...new Set(cmd.slots)].filter((k) => allowed.has(k)).sort();
       const existing = ws.availability.findIndex((a) => a.meetingId === m.id && a.userId === cmd.userId);
       const record = { meetingId: m.id, userId: cmd.userId, slots, updatedAt: ts };
       if (existing >= 0) ws.availability[existing] = record;
@@ -530,7 +547,18 @@ export function applyCommand(
     case "meeting.confirm": {
       const m = must(ws.meetings.find((x) => x.id === cmd.meetingId), "Meeting");
       requireMember(ws, m.projectId, actorId);
-      if (new Date(cmd.end) <= new Date(cmd.start)) throw new CommandError("Invalid time slot");
+      if (m.status !== "polling") throw new CommandError("Only an open poll can be confirmed");
+      const start = new Date(cmd.start);
+      const end = new Date(cmd.end);
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start)
+        throw new CommandError("Invalid time slot");
+      if (end.getTime() - start.getTime() !== m.durationMinutes * 60_000)
+        throw new CommandError("The slot must match the meeting length");
+      // The slot has to start on the poll's grid and finish inside the same day's window.
+      const day = m.candidateDates.find((d) => cellsForDay(d, m.dayStartHour, m.dayEndHour, m.slotMinutes).includes(cellKey(start)));
+      const windowEnd = day ? parseLocalKey(day) : null;
+      windowEnd?.setHours(m.dayEndHour, 0, 0, 0);
+      if (!day || !windowEnd || end > windowEnd) throw new CommandError("That time isn't one of the poll's options");
       const location = cmd.location !== undefined ? cmd.location.trim().slice(0, 120) : m.location;
       replace(ws.meetings, { ...m, location, status: "confirmed", confirmedStart: cmd.start, confirmedEnd: cmd.end });
       log(m.projectId, "meeting_confirmed", { meetingId: m.id, meetingTitle: m.title });

@@ -7,6 +7,27 @@ NOVA SYNC is a collaboration platform for student group projects at NOVA Univers
 
 ---
 
+## Course submission (Introduction to Programming 2477)
+
+| | |
+| --- | --- |
+| **Live app** | _TODO: add the Vercel URL here, e.g. `https://nova-sync.vercel.app`_ |
+| **Repository** | https://github.com/Mariee27/Nova-Sync (public; the graded code is on `main`) |
+| **Stack** | Next.js + TypeScript. Using it instead of Python/Streamlit needs teaching-staff approval (_TODO: note when it was approved_) |
+
+**Team**
+
+| Name | Student number | Main areas |
+| --- | --- | --- |
+| _TODO_ | _TODO_ | _TODO_ |
+| _TODO_ | _TODO_ | _TODO_ |
+| _TODO_ | _TODO_ | _TODO_ |
+| _TODO_ | _TODO_ | _TODO_ |
+
+**Run and test locally:** `npm install`, then `npm run dev` (app at http://localhost:3000) and `npm test` (unit tests). `npm run check` runs lint, typecheck, tests and the production build in one go. Details are below.
+
+---
+
 ## Quick start
 
 ```bash
@@ -22,7 +43,7 @@ Open the site and click **Explore Demo**. No account, server or credentials are 
 | `npm run build` / `npm start` | Production build and server |
 | `npm run lint` | ESLint (Next.js + React hooks + a11y rules) |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm test` | Vitest unit tests (scheduler, progress, health, insights, commands, recap, .ics) |
+| `npm test` | Vitest unit tests: scheduler, progress, health, insights, commands, rejected actions and edge cases, recap, .ics |
 | `npm run check` | Lint, typecheck, tests and production build in one go |
 
 Requires Node.js 20.9+.
@@ -141,6 +162,21 @@ tests/                   Vitest unit tests
 
 ---
 
+## Deploying to Vercel
+
+1. Sign in at [vercel.com](https://vercel.com) with GitHub and choose **Add New → Project**.
+2. Import `Mariee27/Nova-Sync`. Vercel detects Next.js, so keep the defaults.
+3. Leave the environment variables empty to deploy in demo mode, or add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in **Settings → Environment Variables** for Supabase mode. Keys live in Vercel's settings, never in the repository.
+4. Click **Deploy**. Every push to `main` redeploys automatically. Put the URL in the table at the top of this README.
+
+## Security
+
+- **Permissions are checked where the data changes, not only in the UI.** `applyCommand` refuses writes by non-members, owner-only actions (deleting a project, removing members), assigning tasks to non-members, editing other people's personal events, and answering a poll on someone else's behalf. In Supabase mode, row-level security enforces the same rules in the database.
+- **Every input is validated** with Zod schemas or explicit checks: lengths, dates, colours, emails, working hours, meeting windows, and slots that must be real poll options.
+- **No secrets in the repository.** `.env*` files are git-ignored, and only `.env.example` with empty placeholders is committed. The Supabase anon key is a public client key; RLS protects the data.
+- **Dependencies are pinned to exact versions** (`package.json`, `.npmrc` with `save-exact`, and `package-lock.json`). `npm audit` reported 0 known vulnerabilities on 2026-11-16.
+- **Demo mode is a demonstration, not a secure multi-user system.** Its data lives in one browser, and anyone using that browser can see it.
+
 ## Connecting Supabase
 
 1. Create a Supabase project.
@@ -173,7 +209,8 @@ The smoke test signs in as two users and checks that the second user sees nothin
 - **Simple conflict handling.** Supabase mode writes row diffs with last-write-wins and reloads the whole workspace on change. That is fine for student-sized teams, not for large organisations.
 - **Times use the browser's time zone.** Scheduling grids are shown in local time; mixed-time-zone teams are not specially handled.
 - **No file attachments or chat.** Tasks have comments; files stay in the group's existing drive.
-- **Testing scope.** Unit tests cover the scheduler, progress, health, insights, command reducer, recap and `.ics`. UI flows were checked manually in a headless browser at desktop and phone sizes; there is no automated end-to-end suite yet.
+- **Stack approval.** The course's default stack is Python with Streamlit. Using Next.js needs the teaching staff's approval.
+- **Testing scope.** Unit tests cover the scheduler, progress, health, insights, the command reducer (including rejected actions and edge cases), recap and `.ics`. UI flows were checked manually in a headless browser at desktop and phone sizes; there is no automated end-to-end suite yet.
 - **Accessibility** follows WAI-ARIA patterns (labels, keyboard drag and drop, focus states, reduced motion), but has not been audited with screen-reader users.
 
 ---
