@@ -1,0 +1,13 @@
+import { Suspense } from "react";
+import type { Metadata } from "next";
+import { ProjectsList } from "@/components/projects/projects-list";
+
+export const metadata: Metadata = { title: "Projects" };
+
+export default function Page() {
+  return (
+    <Suspense>
+      <ProjectsList />
+    </Suspense>
+  );
+}
