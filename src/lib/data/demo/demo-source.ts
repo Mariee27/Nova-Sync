@@ -155,7 +155,7 @@ export class DemoDataSource implements DataSource {
 
   async execute(session: Session, command: Command): Promise<CommandResult> {
     const stored = ensure();
-    const result = applyCommand(stored.data, session.userId, command);
+    const result = applyCommand(stored.data, session.userId, command, new Date(), { allowProxyAvailability: true });
     write({ ...stored, dirty: true, data: result.ws });
     return result;
   }

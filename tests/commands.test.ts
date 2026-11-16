@@ -99,7 +99,9 @@ describe("meeting commands", () => {
 
   it("refuses availability for people who were not invited", () => {
     expect(() =>
-      applyCommand(ws0(), DEMO_USER_ID, { type: "meeting.availability", meetingId: "m_ent_workshop", userId: "u_tiago", slots: [] }),
+      applyCommand(ws0(), DEMO_USER_ID, { type: "meeting.availability", meetingId: "m_ent_workshop", userId: "u_tiago", slots: [] }, now, {
+        allowProxyAvailability: true,
+      }),
     ).toThrow(/invited/);
   });
 });
